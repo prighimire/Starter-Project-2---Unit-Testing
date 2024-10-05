@@ -1,129 +1,151 @@
 import unittest
-from boggle_solver import Boggle  # Import the Boggle class
+import sys
 
-def lowercase_string_array(string_array):
-    for i in range(len(string_array)):
-        string_array[i] = string_array[i].lower()
+from boggle_solver import Boggle
 
-class TestBoggleSolver(unittest.TestCase):
+class TestSuite_Alg_Scalability_Cases(unittest.TestCase):
 
-    def test_normal_case(self):
-        grid = [['t', 'w', 'y', 'r'],
-                ['e', 'n', 'p', 'h'],
-                ['g', 'z', 'qu', 'r'],
-                ['o', 'n', 't', 'a']]
-        dictionary = ['art', 'ego', 'gent', 'get', 'net', 'new', 'newt', 'prat',
-                      'pry', 'qua', 'quart', 'quartz', 'rat', 'tar', 'tarp',
-                      'ten', 'went', 'wet', 'arty', 'egg', 'not', 'quar']
-        expected = ['art', 'ego', 'gent', 'get', 'net', 'new', 'newt', 'prat', 
-                    'pry', 'qua', 'quar', 'quart', 'quartz', 'rat', 'tar', 
-                    'tarp', 'ten', 'went', 'wet']
+  def test_Normal_case_3x3(self):
+    grid = [["A", "B", "C"],["D", "E", "F"],["G", "H", "I"]]
+    dictionary = ["abc", "abdhi", "abi", "ef", "cfi", "dea"]
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["abc", "abdhi", "cfi", "dea"];
+    expected = [x.upper() for x in expected]
+    solution = sorted(solution)   
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
+  def test_4x4_grid(self):
+    grid = [["T", "W", "Y", "R"], ["E", "N", "P", "H"], ["G", "Z", "Qu", "R"], ["O", "N", "T", "A"]]
+    dictionary = ["art", "ego", "gent", "get", "net", "new", "newt", "prat", "pry", "qua", "quart", "quartz", 
+                  "rat", "tar", "tarp", "ten", "went", "wet", "arty", "not", "quar"]
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["ART", "EGO", "GENT", "GET", "NET", "NEW", "NEWT", "PRAT", "PRY", "QUA", "QUART", 
+                "QUARTZ", "RAT", "TAR", "TARP", "TEN", "WENT", "WET", "QUAR"]
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        lowercase_string_array(solutions)
-        lowercase_string_array(expected)
-        self.assertEqual(sorted(solutions), sorted(expected))
+  def test_7x7_grid(self):
+    grid = [
+      ["A", "B", "C", "D", "E", "F", "G"],
+      ["H", "I", "J", "K", "L", "M", "N"],
+      ["O", "P", "Q", "R", "S", "T", "U"],
+      ["V", "W", "X", "Y", "Z", "A", "B"],
+      ["C", "D", "E", "F", "G", "H", "I"],
+      ["J", "K", "L", "M", "N", "O", "P"],
+      ["Q", "R", "S", "T", "U", "V", "W"]
+    ]
+    dictionary = ["abc", "tuv", "xyz", "qrst", "klmn", "abcdefg", "hijklmno", "qrstuvw", "wxyz", "nopqrs", "ekq"]
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["ABC", "TUV", "XYZ", "QRST", "KLMN", "ABCDEFG", "QRSTUVW", "WXYZ", "EKQ"]
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-    def test_empty_grid(self):
-        grid = [[]]
-        dictionary = ['art', 'ego', 'gent']
-        expected = []
+class TestSuite_Simple_Edge_Cases(unittest.TestCase):
+  def test_SquareGrid_case_1x1(self):
+    grid = [["A"]];
+    dictionary = ["a", "b", "c"]
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = []
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
+  def test_EmptyGrid_case_0x0(self):
+    grid = [[]];
+    dictionary = ["hello", "there", "general", "kenobi"]
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = []
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
+  
+  def test_EmptyDictionary(self):
+    grid = [["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]]
+    dictionary = []  
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = []
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
+  
 
-    def test_empty_dictionary(self):
-        grid = [['a', 'b', 'c', 'd']]
-        dictionary = []
-        expected = []
+class TestSuite_Complete_Coverage(unittest.TestCase):
 
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
+  def test_NoWordsFromDictionary(self):
+    grid = [["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]]
+    dictionary = ["xyz", "mno", "pqr"]  
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = []  
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
+  
+  def test_PartialWordsFromDictionary(self):
+    grid = [["A", "B", "C"], ["D", "E", "F"], ["G", "H", "I"]]
+    dictionary = ["abc", "cfi", "xyz", "ghi"]  
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["ABC", "CFI", "GHI"]
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
+class TestSuite_Qu_and_St(unittest.TestCase):
 
-    def test_edge_case_short_words(self):
-        grid = [['a', 'b', 'c', 'd'],
-                ['e', 'f', 'g', 'h']]
-        dictionary = ['a', 'b', 'c', 'd']
-        expected = []
+  def test_GridWithMultiLetterCellsValidWords(self):
+    grid = [["Qu", "A", "B"], ["C", "Th", "E"], ["F", "G", "H"]]  
+    dictionary = ["quiz", "quail", "the", "bat", "cat", "hat"]  
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["THE"]  
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
+  
+  def test_GridWithMultipleMultiLetterCellsValidWords(self):
+    grid = [["St", "A", "R"], ["Qu", "E", "T"], ["F", "G", "H"]]  
+    dictionary = ["star", "start", "quest", "quiet", "rat", "hat", "set"] 
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["STAR", "START", "QUEST", "RAT"] 
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
+  
+  def test_GridWithMultipleMultiLetterCellsValidWords(self):
+    grid = [["St", "A", "R"], ["Qu", "E", "T"], ["F", "G", "H"]]  
+    dictionary = ["stqufgearth", "startequfgh", "star", "start", "quest", "quiet", "rat", "hat", "set"] 
+    mygame = Boggle(grid, dictionary)
+    solution = mygame.getSolution()
+    solution = [x.upper() for x in solution]
+    expected = ["STAR", "START", "QUEST", "RAT", "STARTEQUFGH", "STQUFGEARTH"] 
+    solution = sorted(solution)
+    expected = sorted(expected)
+    self.assertEqual(expected, solution)
 
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
 
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
-
-    def test_single_letter_words(self):
-        grid = [['a', 'b', 'c'],
-                ['d', 'e', 'f']]
-        dictionary = ['ad', 'be', 'cf', 'abc']
-        expected = ['abc']
-
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
-
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
-
-    def test_case_sensitive_words(self):
-        grid = [['A', 'B', 'C', 'D'],
-                ['E', 'F', 'G', 'H']]
-        dictionary = ['ab', 'ACD', 'abC', 'ED']
-        expected = ['acd', 'abc']
-
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
-
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
-
-    def test_grid_with_no_possible_words(self):
-        grid = [['x', 'y', 'z'],
-                ['x', 'y', 'z']]
-        dictionary = ['abc', 'def', 'ghi']
-        expected = []
-
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
-
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
-
-    def test_large_grid(self):
-        grid = [['A', 'B', 'C', 'D', 'E'],
-                ['F', 'G', 'H', 'I', 'J'],
-                ['K', 'L', 'M', 'N', 'O'],
-                ['P', 'Q', 'R', 'S', 'T'],
-                ['U', 'V', 'W', 'X', 'Y']]
-        dictionary = ['ABC', 'GHI', 'MNO', 'STU', 'XYZ']
-        expected = ['abc', 'ghi', 'mno', 'stu', 'xyz']
-
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
-
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
-
-    def test_grid_with_qu(self):
-        grid = [['q', 'u', 'a', 'r'],
-                ['t', 'e', 's', 't'],
-                ['b', 'o', 'x', 'y'],
-                ['a', 'r', 'e', 'd']]
-        dictionary = ['quar', 'test', 'box', 'are', 'ear', 'red']
-        expected = ['are', 'box', 'quar', 'red', 'test']
-
-        boggle = Boggle(grid, dictionary)
-        solutions = boggle.getSolution()
-
-        lowercase_string_array(solutions)
-        self.assertEqual(sorted(solutions), sorted(expected))
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()
+
