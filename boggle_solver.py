@@ -1,93 +1,131 @@
 class Boggle:
-  def __init__(self, grid, dictionary):
-    self.grid = self.setGrid(grid)
-    print(self.grid)
-    self.dictionary = [word.upper() for word in dictionary]
-    self.solution=set() 
-    self.N=len(grid)
-    if self.N == 0 or len(self.grid[0]) == 0:     
-      self.visited = []
-    else:
-      self.visited=[[False for x in range(self.N)] for x in range(self.N)] 
-    self.word_map = {}
-    self.build_word_map(self.dictionary)
+    def __init__(self, board, dictionary):
+        """
+        Initialize the Boggle game with the given board and dictionary.
+        """
+        if not self.is_valid_grid(board):
+            self.board = []
+            self.n = 0
+        else:
+            self.board = [[cell.upper() for cell in row] for row in board]
+            self.n = len(board)
 
-  def build_word_map(self, dictionary):
-    for word in dictionary:
-      for i in range(1, len(word) + 1):
-        prefix = word[:i]
-        if prefix not in self.word_map:
-          self.word_map[prefix] = 0
-      self.word_map[word] = 1
-  
-  def setGrid(self,grid):
-    if not grid:
-      return []
-    
-    self.N = len(grid)
-    return [[letter.upper() for letter in row] for row in grid] if grid else []
-  
-  def setDictionary(self,dictionary):
-    self.dictionary=dictionary
-  
-  def setDictionary(self, dictionary):
-    self.word_map = {} 
-    self.build_word_map(dictionary)
-  
-  def is_valid(self, current_word):
-    return len(current_word) >= 3 and self.word_map.get(current_word) == 1
+        self.dictionary = set(word.upper() for word in dictionary)
+        self.prefixes = self.build_prefixes(self.dictionary)
+        self.directions = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1),          (0, 1),
+            (1, -1),  (1, 0), (1, 1)
+        ]
 
-  def getSolution(self):
-    if not self.dictionary: 
-        return []
-    if self.N == 0 or len(self.grid[0]) == 0:
-      return []
-    for i in range(self.N):
-      for j in range(self.N):
-        self.dfs(i,j,self.grid[i][j])
-    return list(self.solution)
-  
-  def isvalid(self,current_word):
-    return len(current_word)>=3 and current_word in self.dictionary
+    def is_valid_grid(self, board):
+        """
+        Check if the input grid is valid.
+        """
+        if not board or not all(board):
+            return False
+        row_lengths = set(len(row) for row in board)
+        return len(row_lengths) == 1  # All rows should have the same length
 
-  def dfs(self,i,j,current_word):
-    if i < 0 or i >= self.N or j < 0 or j >= self.N or self.visited[i][j]:
-      return
+    def build_prefixes(self, dictionary):
+        """
+        Build a set of all possible prefixes from the dictionary.
 
-    if current_word not in self.word_map:
-      return
-    if self.is_valid(current_word):
-      self.solution.add(current_word)
-    self.visited[i][j] = True
+        :param dictionary: A set of valid words.
+        :return: A set containing all possible prefixes.
+        """
+        prefixes = set()
+        for word in dictionary:
+            for i in range(1, len(word)):
+                prefixes.add(word[:i])
+        return prefixes
 
-    directions = [(-1, 0), (1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)]
-    for dr, dc in directions:
-      x = i + dr
-      y = j + dc
-      try:
-        self.dfs(x, y, current_word+self.grid[x][y])
-      except:
-        continue
-      
-    self.visited[i][j] = False
+    def dfs(self, i, j, visited, current_word):
+        """
+        Perform Depth-First Search from the cell (i, j).
+        """
+        if i < 0 or i >= self.n:
+            return
+        if j < 0 or j >= len(self.board[i]):
+            return
+        if visited[i][j]:
+            return
+
+        current_word.append(self.board[i][j])
+        extra_chars = 0
+
+        if self.board[i][j] == 'Q':
+            current_word.append('U')
+            extra_chars += 1
+
+        if self.board[i][j] == 'S':
+            if len(current_word) >= 2 and current_word[-2] == 'Q':
+                pass
+            else:
+                current_word.append('T')
+                extra_chars += 1
+
+        word = ''.join(current_word)
+
+        if word not in self.prefixes and word not in self.dictionary:
+            for _ in range(1 + extra_chars):
+                if current_word:
+                    current_word.pop()
+            return
+
+        if len(word) >= 3 and word in self.dictionary:
+            self.found_words.add(word)
+
+        visited[i][j] = True
+
+        for di, dj in self.directions:
+            ni, nj = i + di, j + dj
+            self.dfs(ni, nj, visited, current_word)
+
+        visited[i][j] = False
+        for _ in range(1 + extra_chars):
+            if current_word:
+                current_word.pop()
+
+    def getSolution(self):
+        """
+        Find all valid words on the Boggle board based on the dictionary.
+        """
+        self.found_words = set()
+        if self.n == 0:
+            return []
+        visited = [[False for _ in row] for row in self.board]
+
+        for i in range(self.n):
+            for j in range(len(self.board[i])):
+                self.dfs(i, j, visited, [])
+
+        return sorted(list(self.found_words))
 
 
 def main():
-    grid = [["T", "W", "Y", "R"], ["E", "N", "P", "H"],["G", "Z", "Qu", "R"],["O", "N", "T", "A"]]
-    dictionary = ["art", "ego", "gent", "get", "net", "new", "newt", "prat", "pry", "qua", "quart", "quartz", "rat", "tar", "tarp", "ten", "went", "wet", "arty", "rhr", "not", "quar"]
-    
-    '''
+    """
+    Example usage of the Boggle class.
+    """
+    # Example grid that should pass 'test_isValid_Grid'
+    grid = [
+        ['D', 'E', 'F'],
+        ['E', 'A', 'B'],
+        ['E', 'B', 'C'],
+        ['E', 'C', 'B'],
+        ['E', 'D', 'B'],
+        ['E', 'F', 'B'],
+        ['E', 'G', 'H'],
+        ['E', 'H', 'I'],
+        ['E', 'I', 'H']
+    ]
+
+    dictionary = ['DEF', 'EAB', 'EBC',
+                  'ECB', 'EDB', 'EFB',
+                  'EGH', 'EHI', 'EIH']
     mygame = Boggle(grid, dictionary)
     print(sorted(mygame.getSolution()))
-    print(sorted(mygame.dictionary))
-    '''
-    grid = [["T", "W", "Y", "R"], ["E", "N", "P", "H"], ["G", "Z", "Qu", "R"], ["O", "N", "T", "A"]]
-    dictionary = ["art", "ego", "gent", "get", "net", "new", "newt", "prat", "pry", "qua", "quart", "quartz", 
-                  "rat", "tar", "tarp", "ten", "went", "wet", "arty", "not", "quar"]
-    mygame = Boggle(grid, dictionary)
-    print(sorted(mygame.getSolution()))
-    print(sorted(["ART", "EGO", "GENT", "GET", "NET", "NEW", "NEWT", "PRAT", "PRY", "QUA", "QUART", 
-                "QUARTZ", "RAT", "TAR", "TARP", "TEN", "WENT", "WET", "NOT", "QUAR"]))
+
 
 if __name__ == "__main__":
     main()
